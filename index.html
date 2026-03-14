@@ -1,3 +1,140 @@
----
-layout: home
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aananth K | Portfolio</title>
+  <meta name="description" content="Aananth K - codenio. Code and input, output. Developer portfolio with projects and GitHub contributions." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="#home" class="nav-logo">codenio</a>
+      <ul class="nav-links">
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#pull-requests">PRs</a></li>
+        <li><a href="#contributions">Contribution graph</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#holopin-badges">Badges</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-avatar-wrap">
+        <img id="avatar" src="https://avatars.githubusercontent.com/u/30741615?v=4" alt="Aananth K" class="hero-avatar" />
+      </div>
+      <h1 class="hero-title"><span id="hero-name">Aananth K</span></h1>
+      <p class="hero-tagline">codenio — code and input, output</p>
+      <p class="hero-bio" id="hero-bio">Loading...</p>
+      <p class="hero-meta" id="hero-meta"></p>
+      <div class="hero-cta">
+        <a href="#pull-requests" class="btn btn-primary">View contributions</a>
+        <a href="#projects" class="btn btn-ghost">View projects</a>
+        <a href="https://github.com/codenio" target="_blank" rel="noopener" class="btn btn-ghost">GitHub</a>
+      </div>
+    </section>
+
+    <section id="summary" class="section summary-section">
+      <h2 class="section-title">Summary</h2>
+      <div class="summary-infographic">
+        <a href="#pull-requests" class="summary-card">
+          <span class="summary-card-value" id="summary-pr-count">—</span>
+          <span class="summary-card-label">Merged PRs</span>
+        </a>
+        <a href="#pull-requests" class="summary-card">
+          <span class="summary-card-value" id="summary-pr-repos">—</span>
+          <span class="summary-card-label">Repos contributed to</span>
+        </a>
+        <a href="#projects" class="summary-card">
+          <span class="summary-card-value" id="summary-project-count">—</span>
+          <span class="summary-card-label">Projects with traction</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="holopin-badges" class="section section--dark">
+      <h2 class="section-title">Holopin Badges</h2>
+      <p class="section-desc">Digital badges for contributions and achievements.</p>
+      <a href="https://holopin.io/@codenio" target="_blank" rel="noopener" class="holopin-wrap">
+        <img src="https://holopin.io/api/user/board?user=codenio" alt="Holopin badge board for codenio" class="holopin-board" />
+      </a>
+    </section>
+
+    <section id="about" class="section">
+      <h2 class="section-title">About</h2>
+      <div class="about-content">
+        <p><strong>SRE at Myntra</strong> · Open source contributor · ~10 years in software.</p>
+        <p>Ex-DevOps at Voonik, Cloud Engineer at Collabera Digital, Research Scholar at IIT Madras. I build and run reliable systems, contribute to OSS (Botkube, Windmill, Steampipe, kubewatch), and have shipped hardware/embedded projects (Raspberry Pi, BitScope, OpenCV, Arduino).</p>
+        <p><a href="https://www.linkedin.com/in/codenio/" target="_blank" rel="noopener">View full profile on LinkedIn</a></p>
+      </div>
+    </section>
+
+    <section id="pull-requests" class="section">
+      <h2 class="section-title">Merged pull requests</h2>
+      <p class="section-desc">Merged PRs only, grouped by repo.</p>
+      <div id="pr-grid" class="pr-grouped">
+        <div class="projects-loading">Loading merged PRs…</div>
+      </div>
+      <p class="projects-note">Showing <span id="pr-count">—</span> merged PRs across <span id="pr-repo-count">—</span> repos. <a href="https://github.com/search?q=is%3Apr+is%3Amerged+author%3Acodenio&type=pullrequests" target="_blank" rel="noopener">View all on GitHub</a></p>
+    </section>
+
+    <section id="contributions" class="section section--dark">
+      <h2 class="section-title">Contribution activity (year-wise)</h2>
+      <p class="section-desc">Commit activity over the last year. This is the same idea as your GitHub profile’s contribution graph — not from GitHub’s API (they don’t expose it), so we use external services.</p>
+      <div class="contrib-chart-wrap">
+        <img src="https://ghchart.rshah.org/codenio" alt="GitHub contribution chart for codenio" class="contrib-chart" />
+      </div>
+      <div class="contrib-calendar" id="contrib-calendar">
+        <p class="contrib-loading">Loading contribution calendar…</p>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <h2 class="section-title">Popular OSS contributions</h2>
+      <p class="section-desc">My own repos with stars or forks (by traction). OSS contributions to other repos are shown in Merged PRs above.</p>
+      <div id="projects-grid" class="projects-grid">
+        <div class="projects-loading">Loading repos…</div>
+      </div>
+      <p class="projects-note">From GitHub API (live). Showing <span id="repo-count">—</span> own repos with stars or forks.</p>
+    </section>
+
+    <section id="contact" class="section">
+      <h2 class="section-title">Contact</h2>
+      <div class="contact-links">
+        <a href="https://github.com/codenio" target="_blank" rel="noopener" class="contact-link">GitHub</a>
+        <a href="https://www.linkedin.com/in/codenio/" target="_blank" rel="noopener" class="contact-link">LinkedIn</a>
+        <a href="mailto:aananthk.mail@gmail.com" class="contact-link">Email</a>
+        <a href="https://twitter.com/codenios" target="_blank" rel="noopener" class="contact-link">Twitter / X</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Aananth K · codenio</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="https://unpkg.com/github-calendar@latest/dist/github-calendar.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/github-calendar@latest/dist/github-calendar-responsive.css" />
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof GitHubCalendar === 'function') {
+        GitHubCalendar('#contrib-calendar', 'codenio', { responsive: true, tooltip: true });
+      } else {
+        document.getElementById('contrib-calendar').innerHTML = '<p>Chart above shows contribution history.</p>';
+      }
+    });
+  </script>
+</body>
+</html>
