@@ -207,12 +207,6 @@
     return !repo.fork;
   }
 
-  function isPopular(repo) {
-    var stars = repo.stargazers_count || 0;
-    var forks = repo.forks_count || 0;
-    return stars > 0 || forks > 0;
-  }
-
   function sortByPopularity(repos) {
     return repos.slice().sort(function (a, b) {
       var sa = a.stargazers_count || 0, fa = a.forks_count || 0;
@@ -230,7 +224,7 @@
       const res = await fetch(API_REPOS);
       if (!res.ok) throw new Error('Repos fetch failed');
       const allRepos = await res.json();
-      var repos = allRepos.filter(isOwnRepo).filter(isPopular);
+      var repos = allRepos.filter(isOwnRepo);
       repos = sortByPopularity(repos);
 
       setRepoCount(repos.length);
@@ -238,7 +232,7 @@
       updateSummary();
       grid.innerHTML = repos.length
         ? repos.map(renderProjectCard).join('')
-        : '<p class="projects-note">No own repos with stars or forks yet.</p>';
+        : '<p class="projects-note">No own repositories yet.</p>';
     } catch (e) {
       grid.innerHTML = '<p class="projects-note">Could not load projects. Check GitHub username and CORS, or use a static list.</p>';
     }
