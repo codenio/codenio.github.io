@@ -207,6 +207,13 @@
     return !repo.fork;
   }
 
+  /** Own non-fork repos under GITHUB_USER with public visibility only. */
+  function isCodenioPublicProject(repo) {
+    if (!isOwnRepo(repo)) return false;
+    if (!repo.owner || repo.owner.login !== GITHUB_USER) return false;
+    return repo.private === false;
+  }
+
   function sortByPopularity(repos) {
     return repos.slice().sort(function (a, b) {
       var sa = a.stargazers_count || 0, fa = a.forks_count || 0;
@@ -224,7 +231,7 @@
       const res = await fetch(API_REPOS);
       if (!res.ok) throw new Error('Repos fetch failed');
       const allRepos = await res.json();
-      var repos = allRepos.filter(isOwnRepo);
+      var repos = allRepos.filter(isCodenioPublicProject);
       repos = sortByPopularity(repos);
 
       setRepoCount(repos.length);
@@ -232,7 +239,7 @@
       updateSummary();
       grid.innerHTML = repos.length
         ? repos.map(renderProjectCard).join('')
-        : '<p class="projects-note">No own repositories yet.</p>';
+        : '<p class="projects-note">No public repositories yet.</p>';
     } catch (e) {
       grid.innerHTML = '<p class="projects-note">Could not load projects. Check GitHub username and CORS, or use a static list.</p>';
     }

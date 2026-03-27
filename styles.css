@@ -406,27 +406,6 @@ main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
 .pr-date { color: var(--text-muted); }
 .pr-num { color: var(--text-muted); }
 
-/* ----- Contributions ----- */
-.contrib-links {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0 0 1rem;
-}
-.contrib-links a { color: var(--accent); }
-.contrib-chart-wrap {
-  margin-bottom: 1.5rem;
-  overflow-x: auto;
-}
-.contrib-chart {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-.contrib-calendar {
-  min-height: 120px;
-}
-.contrib-loading { color: var(--text-muted); }
-
 /* ----- Contact ----- */
 .contact-links {
   display: flex;
