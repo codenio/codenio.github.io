@@ -26,6 +26,122 @@
 
   var GITHUB_USER = ensureGithubQueryParam();
 
+  var PORTFOLIO_CACHE_PREFIX = 'gh_portfolio_v1_';
+  var PORTFOLIO_CACHE_SCHEMA = 1;
+  var rateLimitBannerShown = false;
+  var portfolioCacheWriteChain = Promise.resolve();
+
+  function portfolioCacheStorageKey(login) {
+    return PORTFOLIO_CACHE_PREFIX + String(login || GITHUB_USER).toLowerCase();
+  }
+
+  function loadPortfolioCache(login) {
+    try {
+      var raw = localStorage.getItem(portfolioCacheStorageKey(login));
+      if (!raw) return null;
+      var o = JSON.parse(raw);
+      if (!o || o.schema !== PORTFOLIO_CACHE_SCHEMA) return null;
+      if (String(o.login || '').toLowerCase() !== String(login || GITHUB_USER).toLowerCase()) return null;
+      return o;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  /** Merge fields into per-user snapshot; writes are serialized so parallel loaders do not drop keys. */
+  function mergePortfolioCache(partial) {
+    var login = GITHUB_USER;
+    portfolioCacheWriteChain = portfolioCacheWriteChain.then(function () {
+      var cur = loadPortfolioCache(login);
+      if (!cur) {
+        cur = {
+          schema: PORTFOLIO_CACHE_SCHEMA,
+          login: login,
+          savedAt: null,
+          profile: null,
+          orgs: null,
+          repos: null,
+          prItems: null,
+          prStatsMap: null,
+        };
+      }
+      cur.schema = PORTFOLIO_CACHE_SCHEMA;
+      cur.login = login;
+      var keys = Object.keys(partial);
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (partial[k] !== undefined) cur[k] = partial[k];
+      }
+      cur.savedAt = new Date().toISOString();
+      try {
+        localStorage.setItem(portfolioCacheStorageKey(login), JSON.stringify(cur));
+      } catch (err) {
+        /* quota or stringify */
+      }
+    });
+    portfolioCacheWriteChain = portfolioCacheWriteChain.catch(function () {});
+  }
+
+  /** Fields needed to re-render hero, profile, contact, summary. */
+  function slimProfileForCache(p) {
+    if (!p) return null;
+    return {
+      login: p.login,
+      name: p.name,
+      bio: p.bio,
+      company: p.company,
+      location: p.location,
+      avatar_url: p.avatar_url,
+      html_url: p.html_url,
+      followers: p.followers,
+      following: p.following,
+      created_at: p.created_at,
+      blog: p.blog,
+      twitter_username: p.twitter_username,
+      email: p.email,
+      public_repos: p.public_repos,
+      public_gists: p.public_gists,
+      hireable: p.hireable,
+    };
+  }
+
+  function slimOrgForCache(o) {
+    return {
+      login: o.login,
+      html_url: o.html_url,
+      avatar_url: o.avatar_url,
+      description: o.description,
+    };
+  }
+
+  function slimRepoForCache(r) {
+    return {
+      name: r.name,
+      description: r.description,
+      language: r.language,
+      stargazers_count: r.stargazers_count,
+      forks_count: r.forks_count,
+      html_url: r.html_url,
+    };
+  }
+
+  function applyProfileFromData(profile) {
+    if (!profile) return;
+    setDocumentMeta(profile);
+    setNavAndLinks(profile);
+    setHero(profile);
+    setSummaryFromProfile(profile);
+    renderProfileDetails(profile);
+    renderContact(profile);
+    var foot = el('footer-line');
+    if (foot) {
+      var y = el('year');
+      var yearHtml = y ? y.outerHTML : new Date().getFullYear();
+      foot.innerHTML =
+        '© ' + yearHtml + ' · ' + escapeHtml(profile.name || profile.login || GITHUB_USER);
+    }
+  }
+
   function apiUser() {
     return 'https://api.github.com/users/' + encodeURIComponent(GITHUB_USER);
   }
@@ -103,23 +219,39 @@
 
   function showRateLimitNotice(err) {
     if (!err || !err.rateLimited) return;
+    if (rateLimitBannerShown) return;
+    rateLimitBannerShown = true;
     var box = el('github-rate-notice');
     if (!box) return;
-    var reset = err.resetAt ? new Date(err.resetAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : null;
+    var reset = err.resetAt
+      ? new Date(err.resetAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+      : null;
     var doc =
       err.documentationUrl &&
-      '<a href="' +
+      ' <a href="' +
         escapeHtml(err.documentationUrl) +
-        '" target="_blank" rel="noopener">Rate limiting (docs)</a>';
+        '" target="_blank" rel="noopener">Details</a>';
     var when = reset
-      ? ' Estimated reset: <strong>' + escapeHtml(reset) + '</strong> (your local time).'
+      ? ' Resets around <strong>' + escapeHtml(reset) + '</strong>.'
       : '';
+    var cached = loadPortfolioCache(GITHUB_USER);
+    var savedHint =
+      cached && cached.savedAt
+        ? ' Showing saved data from ' +
+          escapeHtml(
+            new Date(cached.savedAt).toLocaleString(undefined, {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            })
+          ) +
+          '.'
+        : '';
     box.innerHTML =
-      '<p><strong>GitHub API rate limit</strong> — ' +
-      escapeHtml(err.message) +
+      '<p><strong>GitHub rate limit reached.</strong>' +
       when +
-      ' Unauthenticated clients get a low hourly quota; try again after the reset or use a token for higher limits.' +
-      (doc ? ' ' + doc : '') +
+      ' Try again later.' +
+      savedHint +
+      (doc || '') +
       '</p>';
     box.hidden = false;
   }
@@ -411,6 +543,53 @@
     }
   }
 
+  /** Render merged PR section from in-memory search items + optional stats map (live or cached). */
+  function renderMergedPrsBlock(items, statsMap) {
+    var grid = el('pr-grid');
+    if (!grid) return;
+
+    if (!items || !items.length) {
+      grid.innerHTML = '<p class="projects-note">No merged pull requests found in this search window.</p>';
+      setPRCount(0);
+      setPRRepoCount(0);
+      summaryData.prCount = 0;
+      summaryData.prRepoCount = 0;
+      updateSummary();
+      return;
+    }
+
+    var sm = statsMap || {};
+    var byRepo = groupPRsByRepo(items);
+    var repoKeys = Object.keys(byRepo);
+
+    /** Most popular repos first (stars desc); unknown stars last; ties → merged count, then name. */
+    repoKeys.sort(function (a, b) {
+      var sa = sm[a] && sm[a].stars != null ? sm[a].stars : null;
+      var sb = sm[b] && sm[b].stars != null ? sm[b].stars : null;
+      if (sa === null && sb === null) {
+        var c0 = byRepo[b].length - byRepo[a].length;
+        return c0 !== 0 ? c0 : a.localeCompare(b);
+      }
+      if (sa === null) return 1;
+      if (sb === null) return -1;
+      if (sb !== sa) return sb - sa;
+      var c1 = byRepo[b].length - byRepo[a].length;
+      return c1 !== 0 ? c1 : a.localeCompare(b);
+    });
+
+    grid.innerHTML = repoKeys
+      .map(function (repo) {
+        return renderPRGroup(repo, byRepo[repo], sm[repo]);
+      })
+      .join('');
+
+    setPRCount(items.length);
+    setPRRepoCount(repoKeys.length);
+    summaryData.prCount = items.length;
+    summaryData.prRepoCount = repoKeys.length;
+    updateSummary();
+  }
+
   async function loadPRs() {
     var grid = el('pr-grid');
     if (!grid) return;
@@ -420,12 +599,8 @@
       var items = data.items || [];
 
       if (!items.length) {
-        grid.innerHTML = '<p class="projects-note">No merged pull requests found in this search window.</p>';
-        setPRCount(0);
-        setPRRepoCount(0);
-        summaryData.prCount = 0;
-        summaryData.prRepoCount = 0;
-        updateSummary();
+        renderMergedPrsBlock([], {});
+        mergePortfolioCache({ prItems: [], prStatsMap: {} });
         return;
       }
 
@@ -436,34 +611,17 @@
       var statsMap = statsResult.map;
       if (statsResult.rateLimitError) showRateLimitNotice(statsResult.rateLimitError);
 
-      /** Most popular repos first (stars desc); unknown stars last; ties → merged count, then name. */
-      repoKeys.sort(function (a, b) {
-        var sa = statsMap[a] && statsMap[a].stars != null ? statsMap[a].stars : null;
-        var sb = statsMap[b] && statsMap[b].stars != null ? statsMap[b].stars : null;
-        if (sa === null && sb === null) {
-          var c0 = byRepo[b].length - byRepo[a].length;
-          return c0 !== 0 ? c0 : a.localeCompare(b);
-        }
-        if (sa === null) return 1;
-        if (sb === null) return -1;
-        if (sb !== sa) return sb - sa;
-        var c1 = byRepo[b].length - byRepo[a].length;
-        return c1 !== 0 ? c1 : a.localeCompare(b);
-      });
-
-      var html = repoKeys
-        .map(function (repo) {
-          return renderPRGroup(repo, byRepo[repo], statsMap[repo]);
-        })
-        .join('');
-
-      grid.innerHTML = html;
-      setPRCount(items.length);
-      setPRRepoCount(repoKeys.length);
-      summaryData.prCount = items.length;
-      summaryData.prRepoCount = repoKeys.length;
-      updateSummary();
+      renderMergedPrsBlock(items, statsMap);
+      mergePortfolioCache({ prItems: items, prStatsMap: statsMap });
     } catch (e) {
+      if (e.rateLimited) {
+        var snap = loadPortfolioCache(GITHUB_USER);
+        if (snap && Array.isArray(snap.prItems)) {
+          renderMergedPrsBlock(snap.prItems, snap.prStatsMap || {});
+          showRateLimitNotice(e);
+          return;
+        }
+      }
       if (e.rateLimited) showRateLimitNotice(e);
       var extra = e.rateLimited && e.resetAt
         ? ' Resets around ' + new Date(e.resetAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) + '.'
@@ -640,6 +798,7 @@
 
       if (!list.length) {
         grid.innerHTML = '<p class="projects-note">No public organization memberships.</p>';
+        mergePortfolioCache({ orgs: [] });
         return;
       }
 
@@ -647,7 +806,25 @@
         return (a.login || '').localeCompare(b.login || '');
       });
       grid.innerHTML = list.map(renderOrgCard).join('');
+      mergePortfolioCache({ orgs: list.map(slimOrgForCache) });
     } catch (e) {
+      if (e.rateLimited) {
+        var snapO = loadPortfolioCache(GITHUB_USER);
+        if (snapO && Array.isArray(snapO.orgs)) {
+          if (!snapO.orgs.length) {
+            setOrgSummary(0);
+            grid.innerHTML = '<p class="projects-note">No public organization memberships.</p>';
+          } else {
+            setOrgSummary(snapO.orgs.length);
+            var sortedO = snapO.orgs.slice().sort(function (a, b) {
+              return (a.login || '').localeCompare(b.login || '');
+            });
+            grid.innerHTML = sortedO.map(renderOrgCard).join('');
+          }
+          showRateLimitNotice(e);
+          return;
+        }
+      }
       if (e.rateLimited) showRateLimitNotice(e);
       setOrgSummary('—');
       grid.innerHTML =
@@ -660,20 +837,18 @@
   async function loadUser() {
     try {
       var profile = await fetchGitHubJson(apiUser());
-      setDocumentMeta(profile);
-      setNavAndLinks(profile);
-      setHero(profile);
-      setSummaryFromProfile(profile);
-      renderProfileDetails(profile);
-      renderContact(profile);
-      var foot = el('footer-line');
-      if (foot) {
-        var y = el('year');
-        var yearHtml = y ? y.outerHTML : new Date().getFullYear();
-        foot.innerHTML = '© ' + yearHtml + ' · ' + escapeHtml(profile.name || profile.login || GITHUB_USER);
-      }
+      applyProfileFromData(profile);
+      mergePortfolioCache({ profile: slimProfileForCache(profile) });
       return profile;
     } catch (e) {
+      if (e.rateLimited) {
+        var snapU = loadPortfolioCache(GITHUB_USER);
+        if (snapU && snapU.profile) {
+          applyProfileFromData(snapU.profile);
+          showRateLimitNotice(e);
+          return snapU.profile;
+        }
+      }
       if (e.rateLimited) showRateLimitNotice(e);
       if (el('hero-bio')) {
         el('hero-bio').textContent = e.rateLimited
@@ -735,10 +910,32 @@
       setRepoCount(repos.length);
       summaryData.projectCount = repos.length;
       updateSummary();
-      grid.innerHTML = repos.length
-        ? repos.map(renderProjectCard).join('')
-        : '<p class="projects-note">No public repositories (or only forks).</p>';
+      if (!repos.length) {
+        grid.innerHTML = '<p class="projects-note">No public repositories (or only forks).</p>';
+        mergePortfolioCache({ repos: [] });
+        return;
+      }
+      grid.innerHTML = repos.map(renderProjectCard).join('');
+      mergePortfolioCache({ repos: repos.map(slimRepoForCache) });
     } catch (e) {
+      if (e.rateLimited) {
+        var snapR = loadPortfolioCache(GITHUB_USER);
+        if (snapR && Array.isArray(snapR.repos)) {
+          var cachedRepos = snapR.repos;
+          setRepoCount(cachedRepos.length);
+          summaryData.projectCount = cachedRepos.length;
+          updateSummary();
+          if (!cachedRepos.length) {
+            grid.innerHTML = '<p class="projects-note">No public repositories (or only forks).</p>';
+          } else {
+            grid.innerHTML = sortByPopularity(cachedRepos)
+              .map(renderProjectCard)
+              .join('');
+          }
+          showRateLimitNotice(e);
+          return;
+        }
+      }
       if (e.rateLimited) showRateLimitNotice(e);
       grid.innerHTML =
         '<p class="projects-note">' +
