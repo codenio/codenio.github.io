@@ -86,6 +86,28 @@ a:hover { text-decoration: underline; }
 /* ----- Main ----- */
 main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
 
+/* ----- GitHub rate limit ----- */
+.rate-notice {
+  margin: 1rem 0 0;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(210, 153, 34, 0.45);
+  background: rgba(210, 153, 34, 0.12);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.rate-notice p {
+  margin: 0;
+}
+.rate-notice a {
+  color: var(--accent);
+  font-weight: 500;
+}
+.rate-notice strong {
+  color: var(--text);
+}
+
 /* ----- Hero ----- */
 .hero {
   padding: 4rem 0 3rem;
@@ -216,16 +238,65 @@ main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
   margin-top: 0.25rem;
 }
 
-/* ----- Holopin Badges ----- */
-.holopin-wrap {
-  display: block;
-  margin-top: 0.5rem;
+/* ----- Organizations ----- */
+.orgs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
 }
-.holopin-board {
-  max-width: 100%;
-  height: auto;
-  display: block;
+.org-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+.org-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+.org-card-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+}
+.org-card-link:hover { text-decoration: none; }
+.org-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.org-card-body { min-width: 0; }
+.org-name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+.org-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ----- Achievements CTA ----- */
+.achievements-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
 }
 
 /* ----- Projects ----- */
@@ -326,14 +397,29 @@ main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
 .pr-repo-group[open] .pr-repo-heading { border-bottom: 1px solid var(--border); }
 .pr-repo-heading {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
   padding: 1rem 1.25rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   list-style: none;
   margin: 0;
+}
+.pr-repo-stats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.85rem;
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.pr-repo-stat {
+  white-space: nowrap;
 }
 .pr-repo-heading::-webkit-details-marker { display: none; }
 .pr-repo-heading::before {
@@ -350,10 +436,11 @@ main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
 }
 .pr-repo-link:hover { color: var(--text); text-decoration: none; }
 .pr-repo-count {
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
   font-family: var(--font-mono);
+  white-space: nowrap;
 }
 .pr-repo-group .pr-grid {
   padding: 1rem 1.25rem 1.25rem;
@@ -444,4 +531,9 @@ main { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 4rem; }
   .nav-toggle { display: flex; }
   .hero { padding-top: 2.5rem; }
   .section { padding: 2rem 0; }
+  .pr-repo-stats {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 1.15rem;
+  }
 }

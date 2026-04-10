@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aananth K | Portfolio</title>
-  <meta name="description" content="Aananth K - codenio. Code and input, output. Developer portfolio with projects and GitHub contributions." />
+  <title>GitHub profile</title>
+  <meta name="description" content="Live GitHub profile: repos, merged PRs, organizations, and public stats." />
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,13 +13,14 @@
 <body>
   <header class="header">
     <nav class="nav">
-      <a href="#home" class="nav-logo">codenio</a>
+      <a href="#home" class="nav-logo" id="nav-logo">GitHub</a>
       <ul class="nav-links">
         <li><a href="#summary">Summary</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#organizations">Organizations</a></li>
+        <li><a href="#achievements">Achievements</a></li>
         <li><a href="#pull-requests">PRs</a></li>
         <li><a href="#projects">Projects</a></li>
-        <li><a href="#holopin-badges">Badges</a></li>
+        <li><a href="#profile">Profile</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
       <button class="nav-toggle" aria-label="Toggle menu">
@@ -29,18 +30,19 @@
   </header>
 
   <main>
+    <div id="github-rate-notice" class="rate-notice" role="alert" hidden></div>
     <section id="home" class="hero">
       <div class="hero-avatar-wrap">
-        <img id="avatar" src="https://avatars.githubusercontent.com/u/30741615?v=4" alt="Aananth K" class="hero-avatar" />
+        <img id="avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" class="hero-avatar" width="120" height="120" />
       </div>
-      <h1 class="hero-title"><span id="hero-name">Aananth K</span></h1>
-      <p class="hero-tagline">codenio — code and input, output</p>
-      <p class="hero-bio" id="hero-bio">Loading...</p>
+      <h1 class="hero-title"><span id="hero-name">…</span></h1>
+      <p class="hero-tagline" id="hero-login"></p>
+      <p class="hero-bio" id="hero-bio">Loading profile…</p>
       <p class="hero-meta" id="hero-meta"></p>
       <div class="hero-cta">
         <a href="#pull-requests" class="btn btn-primary">View contributions</a>
-        <a href="#projects" class="btn btn-ghost">View projects</a>
-        <a href="https://github.com/codenio" target="_blank" rel="noopener" class="btn btn-ghost">GitHub</a>
+        <a href="#projects" class="btn btn-ghost">View repositories</a>
+        <a href="#" id="hero-github-link" target="_blank" rel="noopener" class="btn btn-ghost">GitHub</a>
       </div>
     </section>
 
@@ -49,7 +51,7 @@
       <div class="summary-infographic">
         <a href="#pull-requests" class="summary-card">
           <span class="summary-card-value" id="summary-pr-count">—</span>
-          <span class="summary-card-label">Merged PRs</span>
+          <span class="summary-card-label">Merged PRs (Contributions)</span>
         </a>
         <a href="#pull-requests" class="summary-card">
           <span class="summary-card-value" id="summary-pr-repos">—</span>
@@ -59,57 +61,73 @@
           <span class="summary-card-value" id="summary-project-count">—</span>
           <span class="summary-card-label">Public repositories</span>
         </a>
+        <a href="#profile" class="summary-card">
+          <span class="summary-card-value" id="summary-followers">—</span>
+          <span class="summary-card-label">Followers</span>
+        </a>
+        <a href="#profile" class="summary-card">
+          <span class="summary-card-value" id="summary-following">—</span>
+          <span class="summary-card-label">Following</span>
+        </a>
+        <a href="#organizations" class="summary-card">
+          <span class="summary-card-value" id="summary-org-count">—</span>
+          <span class="summary-card-label">Organizations</span>
+        </a>
       </div>
     </section>
 
-    <section id="holopin-badges" class="section section--dark">
-      <h2 class="section-title">Holopin Badges</h2>
-      <p class="section-desc">Digital badges for contributions and achievements.</p>
-      <a href="https://holopin.io/@codenio" target="_blank" rel="noopener" class="holopin-wrap">
-        <img src="https://holopin.io/api/user/board?user=codenio" alt="Holopin badge board for codenio" class="holopin-board" />
-      </a>
+    <section id="organizations" class="section">
+      <h2 class="section-title">Organizations</h2>
+      <p class="section-desc">Public organization memberships (GitHub API).</p>
+      <div id="orgs-grid" class="orgs-grid">
+        <div class="projects-loading">Loading organizations…</div>
+      </div>
     </section>
 
-    <section id="about" class="section">
-      <h2 class="section-title">About</h2>
-      <div class="about-content">
-        <p><strong>SRE at Myntra</strong> · Open source contributor · ~10 years in software.</p>
-        <p>Ex-DevOps at Voonik, Cloud Engineer at Collabera Digital, Research Scholar at IIT Madras. I build and run reliable systems, contribute to OSS (Botkube, Windmill, Steampipe, kubewatch), and have shipped hardware/embedded projects (Raspberry Pi, BitScope, OpenCV, Arduino).</p>
-        <p><a href="https://www.linkedin.com/in/codenio/" target="_blank" rel="noopener">View full profile on LinkedIn</a></p>
-      </div>
+    <section id="achievements" class="section section--dark">
+      <h2 class="section-title">Achievements</h2>
+      <p class="section-desc">GitHub does not expose achievement badges on the public REST API. Open the profile Achievements tab to see them on github.com.</p>
+      <p class="achievements-actions">
+        <a href="#" id="achievements-link" target="_blank" rel="noopener" class="btn btn-primary">View achievements on GitHub</a>
+        <a href="#" id="profile-link" target="_blank" rel="noopener" class="btn btn-ghost">Full profile</a>
+      </p>
     </section>
 
     <section id="pull-requests" class="section">
       <h2 class="section-title">Merged pull requests</h2>
-      <p class="section-desc">Merged PRs only, grouped by repo.</p>
+      <p class="section-desc">Merged PRs only, grouped by repo (search API, latest 100). Repos ordered by popularity (stars), most starred first.</p>
       <div id="pr-grid" class="pr-grouped">
         <div class="projects-loading">Loading merged PRs…</div>
       </div>
-      <p class="projects-note">Showing <span id="pr-count">—</span> merged PRs across <span id="pr-repo-count">—</span> repos. <a href="https://github.com/search?q=is%3Apr+is%3Amerged+author%3Acodenio&type=pullrequests" target="_blank" rel="noopener">View all on GitHub</a></p>
+      <p class="projects-note">Showing <span id="pr-count">—</span> merged PRs across <span id="pr-repo-count">—</span> repos. <a href="#" id="pr-search-link" target="_blank" rel="noopener">View all on GitHub</a></p>
     </section>
 
     <section id="projects" class="section">
-      <h2 class="section-title">Popular OSS contributions</h2>
-      <p class="section-desc">Public repositories under codenio (non-forks), sorted by stars then forks. OSS contributions to other repos are shown in Merged PRs above.</p>
+      <h2 class="section-title">Public repositories</h2>
+      <p class="section-desc">Non-fork public repos for this user, sorted by stars then forks.</p>
       <div id="projects-grid" class="projects-grid">
         <div class="projects-loading">Loading repos…</div>
       </div>
-      <p class="projects-note">From GitHub API (live). Showing <span id="repo-count">—</span> public repositories.</p>
+      <p class="projects-note">From GitHub API. Showing <span id="repo-count">—</span> public repositories.</p>
+    </section>
+
+    <section id="profile" class="section">
+      <h2 class="section-title">Profile</h2>
+      <div class="about-content" id="profile-content">
+        <p class="projects-loading">Loading…</p>
+      </div>
     </section>
 
     <section id="contact" class="section">
       <h2 class="section-title">Contact</h2>
-      <div class="contact-links">
-        <a href="https://github.com/codenio" target="_blank" rel="noopener" class="contact-link">GitHub</a>
-        <a href="https://www.linkedin.com/in/codenio/" target="_blank" rel="noopener" class="contact-link">LinkedIn</a>
-        <a href="mailto:aananthk.mail@gmail.com" class="contact-link">Email</a>
-        <a href="https://twitter.com/codenios" target="_blank" rel="noopener" class="contact-link">Twitter / X</a>
+      <div class="contact-links" id="contact-links">
+        <span class="projects-loading">Loading…</span>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>© <span id="year"></span> Aananth K · codenio</p>
+    <p id="footer-line">© <span id="year"></span></p>
   </footer>
 
   <script src="script.js"></script>
