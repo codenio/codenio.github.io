@@ -258,9 +258,9 @@
           '.'
         : '';
     box.innerHTML =
-      '<p><strong>GitHub rate limit reached.</strong>' +
+      '<p><strong>GitHub unauthenticated rate limit reached.</strong>' +
       when +
-      ' Try again later.' +
+      ' Try switching to a different network or IP, or try again later.' +
       savedHint +
       (doc || '') +
       '</p>';
