@@ -1,38 +1,57 @@
 # codenio.github.io
 
-Personal portfolio for **Aananth K** ([codenio](https://github.com/codenio)). Single-page site built with HTML, CSS, and JS. Data is loaded from the GitHub API and external services when the page loads. Hosted on **GitHub Pages** at [https://codenio.github.io/](https://codenio.github.io/).
+Static **GitHub profile portfolio** for [codenio](https://github.com/codenio). It loads public data from the GitHub REST API in the browser (no build step). Hosted on **GitHub Pages**.
 
-## What’s on the site
+## URLs
 
-- **Hero** — Avatar, name, bio, location/company from GitHub. Buttons: **View contributions**, **View projects**, **GitHub**.
-- **Summary** — Infographic cards: merged PR count, repos contributed to, projects with traction (numbers filled from API).
-- **About** — Short professional intro and link to [LinkedIn](https://www.linkedin.com/in/codenio/).
-- **Merged pull requests** — Only **merged** PRs (closed/unmerged are ignored). Grouped by repo, **collapsible by default**; click a repo row to expand. Data from GitHub Search API (`author:codenio is:pr is:merged`).
-- **Contribution activity** — Year-wise commit graph via [ghchart](https://ghchart.rshah.org/) and [github-calendar](https://github.com/Bloggify/github-calendar).
-- **Popular OSS contributions** — **Own repos only** (no forks), with at least 1 star or 1 fork, sorted by stars then forks. Placed at the bottom; OSS contributions to other repos are covered in Merged PRs.
-- **Holopin Badges** — Embedded [Holopin](https://holopin.io) badge board (`user=codenio`).
-- **Contact** — GitHub, LinkedIn, Email, Twitter.
+| URL | Behavior |
+|-----|----------|
+| **https://codenio.github.io/** | Redirects to `/portfolio?github=codenio`. |
+| **https://codenio.github.io/?github=octocat** | Redirects to `/portfolio?github=octocat` (valid usernames only). |
+| **https://codenio.github.io/portfolio?github=_login_** | Main app: live profile for that GitHub login. Missing or invalid `github` is normalized to `codenio` via `history.replaceState`. |
 
-## Deploy to GitHub Pages
+Default profile user is **`codenio`** (see `DEFAULT_GITHUB_USER` in `script.js`).
 
-1. Clone or push this repo to **codenio/codenio.github.io**.
-2. In the repo: **Settings → Pages** → Source: **Deploy from a branch** → Branch: **main** (or **master**) → Folder: **/ (root)** → Save.
-3. Site is live at **https://codenio.github.io/**.
+## What’s on the page
 
-No build step. Only static files: `index.html`, `styles.css`, `script.js`, plus the calendar script/styles loaded from unpkg.
+- **Hero** — Name, `@login`, bio, company/location, avatar (from `GET /users/{login}`).
+- **Summary** — Merged PR count, repos contributed to, public repo count, followers, following, org count.
+- **Organizations** — Public org memberships (`GET /users/{login}/orgs`).
+- **Merged pull requests** — Search API: merged PRs by `author:{login}`, grouped by repo, sorted by repo popularity (stars). Per-repo stars, watchers, forks, and PR reaction totals where data exists.
+- **Public repositories** — User’s non-fork public repos, sorted by stars then forks.
+- **Profile / contact** — Extra public fields (website, X, email if exposed by API), links built from profile data.
+
+Shared assets live at the site root: **`/styles.css`**, **`/script.js`**. The app lives under **`/portfolio/`** on disk (`portfolio/index.html`); the script normalizes the URL to **`/portfolio?github=…`** (no slash before `?`).
+
+## Rate limits and cache
+
+Unauthenticated use of `api.github.com` is limited (see [GitHub REST rate limits](https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api)). The script detects rate-limit responses and shows a short banner.
+
+**Per-user cache** in `localStorage` (key prefix `gh_portfolio_v1_`) stores a slim snapshot after successful loads. If a request is rate limited, the UI falls back to cached data for that `github` user when available.
+
+## Deploy (GitHub Pages)
+
+1. Push this repo to **`codenio/codenio.github.io`** (user site) or your own `&lt;user&gt;.github.io` repo.
+2. **Settings → Pages** → deploy from branch **main** (or **master**) → folder **`/` (root)**.
+3. Site root: **https://YOUR_USER.github.io/** → redirects to **/portfolio?github=codenio** (or whatever you set as `DEFAULT_GITHUB_USER`).
 
 ## Customize
 
-- **GitHub user**: In `script.js`, set `const GITHUB_USER = 'codenio';` (or your username).
-- **About**: Edit the `#about` section in `index.html`.
-- **Contact**: Edit the links in the `#contact` section in `index.html`.
-- **Holopin**: If your Holopin username is not `codenio`, change the `user=codenio` in the Holopin image URL and the profile link in the **Holopin Badges** section in `index.html`.
+- **Default GitHub user** — `DEFAULT_GITHUB_USER` in `script.js`.
+- **Layout / copy** — Edit `portfolio/index.html`.
+- **Styles / behavior** — `styles.css`, `script.js`.
 
-## How data is loaded
+## Project layout
 
-- **Profile**: `GET /users/codenio` (avatar, name, bio, company, location).
-- **Merged PRs**: `GET /search/issues?q=author:codenio+is:pr+is:merged` (grouped by repo in the UI).
-- **Own projects**: `GET /users/codenio/repos` → filter to non-fork repos with stars or forks, sort by popularity.
-- **Contribution graph**: External services (ghchart image + github-calendar). GitHub does not expose contribution activity via API.
+```
+index.html          # Redirect only → /portfolio?github=…
+portfolio/index.html   # Portfolio app markup
+styles.css
+script.js
+README.md
+LICENSE
+```
 
-All requests run in the browser when the page loads. No backend and no API token. Unauthenticated GitHub API limit: 60 requests/hour per IP.
+## License
+
+Licensed under the **Apache License, Version 2.0**. See [LICENSE](LICENSE).

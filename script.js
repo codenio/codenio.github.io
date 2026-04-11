@@ -1,4 +1,15 @@
 (function () {
+  /** Use `/portfolio?…` in the address bar, not `/portfolio/?…`. */
+  function normalizePortfolioPath() {
+    var path = window.location.pathname;
+    if (path === '/portfolio/' || path === '/portfolio/index.html') {
+      var url = new URL(window.location.href);
+      url.pathname = '/portfolio';
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    }
+  }
+  normalizePortfolioPath();
+
   var DEFAULT_GITHUB_USER = 'codenio';
 
   /** GitHub username: alphanumeric or single hyphens inside, 1–39 chars. */
@@ -9,7 +20,7 @@
   }
 
   /**
-   * Ensure ?github= is present; default to codenio. Uses replaceState (no extra round trip).
+   * Ensure ?github= is present on /portfolio; default to codenio. Uses replaceState (no reload).
    */
   function ensureGithubQueryParam() {
     var params = new URLSearchParams(window.location.search);
@@ -287,7 +298,10 @@
     var htmlUrl = (profile && profile.html_url) || 'https://github.com/' + encodeURIComponent(login);
 
     var navLogo = el('nav-logo');
-    if (navLogo) navLogo.textContent = login;
+    if (navLogo) {
+      navLogo.textContent = login;
+      navLogo.href = '/portfolio?github=' + encodeURIComponent(login);
+    }
 
     var heroGithub = el('hero-github-link');
     if (heroGithub) heroGithub.href = htmlUrl;
